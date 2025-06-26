@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { AuthContext } from './authContext';
 import {createUserWithEmailAndPassword ,GoogleAuthProvider,onAuthStateChanged,signInWithEmailAndPassword,signInWithPopup} from 'firebase/auth';
 import {auth , db} from '../firebase/firebase'
-import { collection,addDoc } from 'firebase/firestore';
+import { collection,addDoc,getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,7 @@ function AuthProvider({children}) {
     const [user,setUser] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading,setIsLoading] = useState(false);
+    const [allUserFromDb,setAllUserFromDb] = useState([]);
     const navigate = useNavigate();
 
     const getUserToken = localStorage.getItem('userToken');
@@ -43,6 +44,50 @@ function AuthProvider({children}) {
 
     return () => unsubscribe();
   }, []);
+
+    useEffect(()=>{
+          
+          const getAllUserFromFirebase=async()=>{
+              const querySnapshot = await getDocs(collection(db, "users"));
+  
+              const fetchedUsers = [];
+          querySnapshot.forEach((doc) => {
+           console.log(`${doc.id} => ${doc.data()}`,'aasdsfwewefer');
+           const name = doc.data().name;
+           const id = doc.data().userId;
+
+              fetchedUsers.push({
+              name:name,
+              userId:id
+           });
+            //  console.log(doc.data().name,doc.data().userId , "buyvyubhfnejdinyfeh bwej ");
+          }
+          
+      );
+    
+          setAllUserFromDb(fetchedUsers);
+          }
+         
+         
+     getAllUserFromFirebase(); 
+      },[user]);
+
+      console.log(allUserFromDb,'All Users from Db');
+      
+      const ids=[];
+      allUserFromDb.forEach((u)=>{
+        const id = u.userId;
+        ids.push(id);
+        
+       
+      });
+
+    //   console.log(ids);
+    
+
+      
+      
+      
 
     const signUp =  ({name,email,password}) => {
         console.log({name,email,password}, "userData in signup");
@@ -116,7 +161,7 @@ function AuthProvider({children}) {
 
     const signInWithGoogle =()=>{
         signInWithPopup(auth,googleProvider)
-        .then((result)=>{
+        .then(async (result)=>{
             // it will give us a google access token , we can use it to use google Api
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
@@ -124,6 +169,22 @@ function AuthProvider({children}) {
             // user information that is signed in
             const user = result.user;
             setUser(user);
+            if(ids.includes(user.uid)){
+                return;
+            }else{
+                 try {
+                    const docRef = await addDoc(collection(db,'users'),{
+                        name:user.displayName,
+                        userId:user.uid,
+                    });
+                    console.log("Document written with ID: ", docRef.id);
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                } 
+            }
+           
+            console.log(user,'user while loging using google signup');
+            
             setIsLoggedIn(true);
             toast.success('User logged in with Google successfully');
 

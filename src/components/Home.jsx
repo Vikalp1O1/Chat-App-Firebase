@@ -3,6 +3,7 @@ import useAuth from '../store/authContext';
 import { useNavigate } from 'react-router-dom';
 import {auth} from '../firebase/firebase';
 import SideContainer from '../container/SideContainer';
+import ChatContainer from '../container/ChatContainer';
 
 function Home() {
     const {user , logout} = useAuth();
@@ -13,28 +14,25 @@ function Home() {
 
     
   return (
-   <div className="p-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-center w-full">Home Page</h1>
+    <div className="h-screen w-full flex flex-col">
+            <div className="bg-blue-600 text-white px-6 py-3 flex justify-between items-center">
+                <h1 className="text-xl font-semibold">Chat App</h1>
+                <button
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                    onClick={() => {
+                        logout();
+                        navigate("/login");
+                    }}
+                >
+                    Logout
+                </button>
+            </div>
 
-        
-        <button
-          className="absolute right-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-          onClick={() => {
-            logout();
-            navigate("/login");
-          }}
-        >
-          Logout
-        </button>
-
-      </div>
-      <div className=" flex flex-col items-center justify-center mt-40">
-          <h1 className="text-gray-700 text-2xl">Welcome, {user?.email}!</h1>
-          <p className="text-gray-700 text-lg ">You are logged in.</p>
+            <div className="flex flex-1 overflow-hidden">
+                <SideContainer />
+                <ChatContainer />
+            </div>
         </div>
-        <SideContainer />
-    </div>
   )
 }
 

@@ -3,7 +3,10 @@ import { createContext , useContext } from "react";
 export const ChatContext = createContext({
 
     selectedUser:null,
-    message:'',
+    message:null,
+    messageToEdit:null,
+    messageEdit:()=>{},
+    messageDelete:()=>{},
     sendMessage:()=>{},
     getConversation:()=>{},
 
